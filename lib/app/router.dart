@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:nexai/app/app_shell.dart';
 import 'package:nexai/app/bootstrap_home.dart';
+import 'package:nexai/app/route_transitions.dart';
 
 abstract final class AppRoutes {
   static const String home = '/';
@@ -14,7 +15,10 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: AppRoutes.home,
-          builder: (context, state) => const BootstrapHome(),
+          pageBuilder: (context, state) => buildFadeTransitionPage(
+            key: state.pageKey,
+            child: const BootstrapHome(),
+          ),
         ),
       ],
     ),

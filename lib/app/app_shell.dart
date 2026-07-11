@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:nexai/core/constants/border_radius.dart';
+import 'package:nexai/core/constants/curves.dart';
 import 'package:nexai/core/constants/durations.dart';
 import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
 import 'package:nexai/core/utils/breakpoints.dart';
+import 'package:nexai/widgets/living_background.dart';
 import 'package:nexai/widgets/nex_sidebar.dart';
 
 class AppShell extends StatefulWidget {
@@ -32,28 +34,35 @@ class _AppShellState extends State<AppShell> {
 
     return Scaffold(
       backgroundColor: colors.background,
-      body: Row(
+      body: Stack(
         children: [
-          if (isPersistentSidebar)
-            const SizedBox(width: _sidebarWidth, child: NexSidebar()),
-          Expanded(
-            child: Stack(
-              children: [
-                widget.child,
-                if (!isPersistentSidebar) ...[
-                  Positioned(
-                    top: AppSpacing.space16,
-                    left: AppSpacing.space16,
-                    child: _MenuToggleButton(onTap: _toggleOverlaySidebar),
-                  ),
-                  _SidebarOverlay(
-                    isOpen: _isOverlaySidebarOpen,
-                    width: _sidebarWidth,
-                    onDismiss: _toggleOverlaySidebar,
-                  ),
-                ],
-              ],
-            ),
+          const Positioned.fill(child: LivingBackground()),
+          Row(
+            children: [
+              if (isPersistentSidebar)
+                const SizedBox(width: _sidebarWidth, child: NexSidebar()),
+              Expanded(
+                child: Stack(
+                  children: [
+                    widget.child,
+                    if (!isPersistentSidebar) ...[
+                      Positioned(
+                        top: AppSpacing.space16,
+                        left: AppSpacing.space16,
+                        child: _MenuToggleButton(
+                          onTap: _toggleOverlaySidebar,
+                        ),
+                      ),
+                      _SidebarOverlay(
+                        isOpen: _isOverlaySidebarOpen,
+                        width: _sidebarWidth,
+                        onDismiss: _toggleOverlaySidebar,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -91,7 +100,7 @@ class _SidebarOverlay extends StatelessWidget {
             ),
             AnimatedPositioned(
               duration: AppDurations.normal,
-              curve: Curves.easeOutCubic,
+              curve: AppCurves.standard,
               left: isOpen ? 0 : -width,
               top: 0,
               bottom: 0,

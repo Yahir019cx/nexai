@@ -7,7 +7,9 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const NexaiApp());
-    await tester.pumpAndSettle();
+    // No se usa pumpAndSettle: el fondo vivo (LivingBackground) anima
+    // en bucle infinito y nunca "se asienta".
+    await tester.pump(const Duration(seconds: 1));
 
     final bootstrapTitle = find.descendant(
       of: find.byType(BootstrapHome),
