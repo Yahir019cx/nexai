@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexai/app/app.dart';
 import 'package:nexai/app/bootstrap_home.dart';
@@ -17,5 +18,19 @@ void main() {
     );
 
     expect(bootstrapTitle, findsOneWidget);
+  });
+
+  testWidgets('AppShell no genera overflows en Desktop/Tablet/Mobile', (
+    WidgetTester tester,
+  ) async {
+    for (final width in [1440.0, 900.0, 400.0]) {
+      await tester.binding.setSurfaceSize(Size(width, 800));
+      await tester.pumpWidget(const NexaiApp());
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(tester.takeException(), isNull);
+    }
+
+    await tester.binding.setSurfaceSize(null);
   });
 }

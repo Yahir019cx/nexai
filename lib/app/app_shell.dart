@@ -20,17 +20,23 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   static const double _sidebarWidth = 280;
 
-  bool _isOverlaySidebarOpen = false;
-
-  void _toggleOverlaySidebar() {
-    setState(() => _isOverlaySidebarOpen = !_isOverlaySidebarOpen);
-  }
+  bool _isTabletSidebarCollapsed = false;
+  bool _isMobileSidebarOpen = false;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<NexColors>()!;
     final width = MediaQuery.sizeOf(context).width;
-    final isPersistentSidebar = Breakpoints.isDesktop(width);
+    final isDesktop = Breakpoints.isDesktop(width);
+    final isTablet = Breakpoints.isTablet(width);
+    final isMobile = Breakpoints.isMobile(width);
+
+    // Desktop: sidebar siempre fija. Tablet: sidebar en línea pero
+    // colapsable (el contenido se reacomoda). Mobile: panel deslizable
+    // sobre el contenido (doc 008).
+    final showInlineSidebar =
+        isDesktop || (isTablet && !_isTabletSidebarCollapsed);
+    final showToggleButton = isTablet || isMobile;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -39,26 +45,44 @@ class _AppShellState extends State<AppShell> {
           const Positioned.fill(child: LivingBackground()),
           Row(
             children: [
-              if (isPersistentSidebar)
-                const SizedBox(width: _sidebarWidth, child: NexSidebar()),
+              ClipRect(
+                child: AnimatedAlign(
+                  duration: AppDurations.normal,
+                  curve: AppCurves.standard,
+                  alignment: Alignment.centerLeft,
+                  widthFactor: showInlineSidebar ? 1 : 0,
+                  child: const SizedBox(
+                    width: _sidebarWidth,
+                    child: NexSidebar(),
+                  ),
+                ),
+              ),
               Expanded(
                 child: Stack(
                   children: [
                     widget.child,
-                    if (!isPersistentSidebar) ...[
+                    if (showToggleButton)
                       Positioned(
                         top: AppSpacing.space16,
                         left: AppSpacing.space16,
                         child: _MenuToggleButton(
-                          onTap: _toggleOverlaySidebar,
+                          onTap: () => setState(() {
+                            if (isTablet) {
+                              _isTabletSidebarCollapsed =
+                                  !_isTabletSidebarCollapsed;
+                            } else {
+                              _isMobileSidebarOpen = !_isMobileSidebarOpen;
+                            }
+                          }),
                         ),
                       ),
+                    if (isMobile)
                       _SidebarOverlay(
-                        isOpen: _isOverlaySidebarOpen,
+                        isOpen: _isMobileSidebarOpen,
                         width: _sidebarWidth,
-                        onDismiss: _toggleOverlaySidebar,
+                        onDismiss: () =>
+                            setState(() => _isMobileSidebarOpen = false),
                       ),
-                    ],
                   ],
                 ),
               ),
@@ -70,8 +94,8 @@ class _AppShellState extends State<AppShell> {
   }
 }
 
-/// Panel deslizable propio para Tablet/Mobile (doc 999 prohíbe usar
-/// el Drawer por defecto de Flutter como diseño final).
+/// Panel deslizable propio para Mobile (doc 999 prohíbe usar el
+/// Drawer por defecto de Flutter como diseño final).
 class _SidebarOverlay extends StatelessWidget {
   const _SidebarOverlay({
     required this.isOpen,
