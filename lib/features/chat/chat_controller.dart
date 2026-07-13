@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nexai/features/chat/available_models.dart';
 import 'package:nexai/features/chat/chat_service.dart';
+import 'package:nexai/models/agent_model.dart';
 import 'package:nexai/models/attachment_model.dart';
 import 'package:nexai/models/conversation_model.dart';
 import 'package:nexai/models/message_model.dart';
@@ -41,6 +42,21 @@ class ChatController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Inicia una conversación con un agente (doc013 Fase 7: "Ejecutar
+  /// agente"), integrado de forma natural con el chat existente.
+  void startConversationWithAgent(AgentModel agent) {
+    final conversation = ConversationModel(
+      id: _generateId(),
+      title: agent.name,
+      updatedAt: DateTime.now(),
+      agentName: agent.name,
+      agentInstructions: agent.instructions,
+    );
+    _conversations.insert(0, conversation);
+    _activeConversationId = conversation.id;
+    notifyListeners();
+  }
+
   void selectConversation(String id) {
     if (_activeConversationId == id) return;
     _activeConversationId = id;
@@ -62,8 +78,9 @@ class ChatController extends ChangeNotifier {
     if ((trimmed.isEmpty && attachments.isEmpty) || _isSending) return;
 
     if (activeConversation == null) startNewConversation();
-    final conversationId = _activeConversationId!;
-    final isFirstMessage = activeConversation!.messages.isEmpty;
+    final conversation = activeConversation!;
+    final conversationId = conversation.id;
+    final isFirstMessage = conversation.messages.isEmpty;
 
     final userMessage = MessageModel(
       id: _generateId(),
@@ -73,14 +90,18 @@ class ChatController extends ChangeNotifier {
       attachments: attachments,
     );
     _appendMessage(conversationId, userMessage);
-    if (isFirstMessage) {
+    if (isFirstMessage && conversation.agentName == null) {
       _renameConversation(
         conversationId,
         _titleFrom(trimmed.isEmpty ? attachments.first.fileName : trimmed),
       );
     }
 
-    await _streamAssistantResponse(conversationId, trimmed);
+    await _streamAssistantResponse(
+      conversationId,
+      trimmed,
+      agentName: conversation.agentName,
+    );
   }
 
   /// Regenera una respuesta existente (doc 006: acción "Regenerar"),
@@ -97,7 +118,11 @@ class ChatController extends ChangeNotifier {
     _updateConversation(
       conversation.copyWith(messages: conversation.messages.sublist(0, index)),
     );
-    await _streamAssistantResponse(conversation.id, precedingUserMessage.content);
+    await _streamAssistantResponse(
+      conversation.id,
+      precedingUserMessage.content,
+      agentName: conversation.agentName,
+    );
   }
 
   /// Prepara la edición de un mensaje ya enviado (doc 006: "la
@@ -126,8 +151,9 @@ class ChatController extends ChangeNotifier {
 
   Future<void> _streamAssistantResponse(
     String conversationId,
-    String prompt,
-  ) async {
+    String prompt, {
+    String? agentName,
+  }) async {
     _isSending = true;
     _cancelRequested = false;
     final modelId = _selectedModelId;
@@ -158,7 +184,11 @@ class ChatController extends ChangeNotifier {
       );
       _replaceMessage(conversationId, assistantMessage);
 
-      await for (final partial in _chatService.streamAssistantReply(prompt)) {
+      final stream = _chatService.streamAssistantReply(
+        prompt,
+        agentName: agentName,
+      );
+      await for (final partial in stream) {
         if (_cancelRequested) {
           _replaceMessage(
             conversationId,

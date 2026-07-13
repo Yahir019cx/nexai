@@ -17,7 +17,9 @@ class ChatHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final chatController = context.watch<ChatController>();
     final colors = Theme.of(context).extension<NexColors>()!;
-    final title = chatController.activeConversation?.title ?? 'NEXAI';
+    final conversation = chatController.activeConversation;
+    final title = conversation?.title ?? 'NEXAI';
+    final isAgentConversation = conversation?.agentName != null;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -28,6 +30,10 @@ class ChatHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
+          if (isAgentConversation) ...[
+            Icon(Icons.smart_toy_outlined, size: 16, color: AppColors.primary),
+            const SizedBox(width: AppSpacing.space8),
+          ],
           Expanded(
             child: AnimatedSwitcher(
               duration: AppDurations.normal,

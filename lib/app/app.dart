@@ -4,6 +4,7 @@ import 'package:nexai/app/router.dart';
 import 'package:nexai/core/constants/durations.dart';
 import 'package:nexai/core/theme/app_theme.dart';
 import 'package:nexai/core/theme/theme_controller.dart';
+import 'package:nexai/features/agents/agents_controller.dart';
 import 'package:nexai/features/chat/chat_controller.dart';
 import 'package:nexai/features/settings/settings_controller.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,7 @@ class NexaiApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeController()),
         ChangeNotifierProvider(create: (_) => ChatController()),
         ChangeNotifierProvider(create: (_) => SettingsController()),
+        ChangeNotifierProvider(create: (_) => AgentsController()),
       ],
       child: Consumer<ThemeController>(
         builder: (context, themeController, child) {

@@ -1,6 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexai/app/app.dart';
+import 'package:nexai/app/router.dart';
+import 'package:nexai/features/agents/widgets/agent_card.dart';
 import 'package:nexai/features/chat/widgets/chat_welcome.dart';
 
 void main() {
@@ -25,6 +27,20 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Configuración'), findsWidgets);
+  });
+
+  testWidgets('La pagina de Agentes muestra los agentes sembrados', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const NexaiApp());
+    await tester.pump(const Duration(seconds: 1));
+
+    appRouter.go(AppRoutes.agents);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(AgentCard), findsNWidgets(2));
   });
 
   for (final width in [1440.0, 900.0, 400.0]) {

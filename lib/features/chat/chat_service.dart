@@ -3,8 +3,8 @@
 /// es una decisión de producto pendiente). Este servicio permite
 /// construir y validar toda la experiencia del chat mientras tanto.
 class ChatService {
-  Stream<String> streamAssistantReply(String prompt) async* {
-    final reply = _mockReplyFor(prompt);
+  Stream<String> streamAssistantReply(String prompt, {String? agentName}) async* {
+    final reply = _mockReplyFor(prompt, agentName: agentName);
     final words = reply.split(' ');
     final buffer = StringBuffer();
 
@@ -16,9 +16,13 @@ class ChatService {
     }
   }
 
-  String _mockReplyFor(String prompt) {
+  String _mockReplyFor(String prompt, {String? agentName}) {
+    final intro = agentName != null
+        ? 'Esto es una respuesta simulada del agente **$agentName**.'
+        : 'Esto es una respuesta simulada de **NEXAI**.';
+
     return '''
-Esto es una respuesta simulada de **NEXAI**. Todavía no hay un modelo de IA real conectado, así que este texto sirve únicamente para validar la experiencia del chat: streaming, markdown y bloques de código.
+$intro Todavía no hay un modelo de IA real conectado, así que este texto sirve únicamente para validar la experiencia del chat: streaming, markdown y bloques de código.
 
 Preguntaste:
 

@@ -30,6 +30,12 @@ class NexSidebar extends StatelessWidget {
         isEnabled: false,
       ),
       SidebarNavItem(
+        icon: Icons.smart_toy_outlined,
+        label: 'Agentes',
+        isSelected: currentLocation == AppRoutes.agents,
+        onTap: () => context.go(AppRoutes.agents),
+      ),
+      SidebarNavItem(
         icon: Icons.settings_outlined,
         label: 'Configuración',
         isSelected: currentLocation == AppRoutes.settings,
