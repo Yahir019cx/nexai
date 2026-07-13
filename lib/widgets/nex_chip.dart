@@ -9,12 +9,14 @@ class NexChip extends StatefulWidget {
   const NexChip({
     super.key,
     required this.label,
+    this.icon,
     this.isSelected = false,
     this.onTap,
     this.onRemove,
   });
 
   final String label;
+  final IconData? icon;
   final bool isSelected;
   final VoidCallback? onTap;
   final VoidCallback? onRemove;
@@ -60,6 +62,10 @@ class _NexChipState extends State<NexChip> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (widget.icon != null) ...[
+            Icon(widget.icon, size: 12, color: foreground),
+            const SizedBox(width: AppSpacing.space4),
+          ],
           Flexible(
             child: Text(
               widget.label,

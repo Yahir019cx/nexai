@@ -76,7 +76,8 @@ class _ChatPageState extends State<ChatPage> {
               child: PromptInput(
                 controller: _promptController,
                 isSending: chatController.isSending,
-                onSend: chatController.sendMessage,
+                onSend: (text, attachments) =>
+                    chatController.sendMessage(text, attachments: attachments),
                 onStop: chatController.cancelSending,
               ),
             ),

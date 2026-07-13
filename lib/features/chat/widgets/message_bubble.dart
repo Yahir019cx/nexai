@@ -6,6 +6,7 @@ import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
 import 'package:nexai/core/theme/text_styles.dart';
 import 'package:nexai/features/chat/available_models.dart';
+import 'package:nexai/features/chat/widgets/attachment_chip.dart';
 import 'package:nexai/features/chat/widgets/message_actions.dart';
 import 'package:nexai/features/chat/widgets/message_markdown.dart';
 import 'package:nexai/features/chat/widgets/thinking_indicator.dart';
@@ -91,6 +92,18 @@ class _MessageBubbleState extends State<MessageBubble> {
                             )
                           : MessageMarkdown(data: message.content)),
               ),
+              if (message.attachments.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.space8),
+                  child: Wrap(
+                    spacing: AppSpacing.space8,
+                    runSpacing: AppSpacing.space8,
+                    children: [
+                      for (final attachment in message.attachments)
+                        AttachmentChip(attachment: attachment),
+                    ],
+                  ),
+                ),
               if (message.status == MessageStatus.cancelled)
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.space4),
