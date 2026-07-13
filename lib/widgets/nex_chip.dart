@@ -60,11 +60,14 @@ class _NexChipState extends State<NexChip> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            widget.label,
-            style: AppTextStyles.caption.copyWith(
-              color: foreground,
-              fontWeight: FontWeight.w500,
+          Flexible(
+            child: Text(
+              widget.label,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.caption.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           if (widget.onRemove != null) ...[

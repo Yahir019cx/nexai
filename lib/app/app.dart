@@ -3,6 +3,7 @@ import 'package:nexai/app/router.dart';
 import 'package:nexai/core/constants/durations.dart';
 import 'package:nexai/core/theme/app_theme.dart';
 import 'package:nexai/core/theme/theme_controller.dart';
+import 'package:nexai/features/chat/chat_controller.dart';
 import 'package:provider/provider.dart';
 
 class NexaiApp extends StatelessWidget {
@@ -10,8 +11,11 @@ class NexaiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ThemeController(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeController()),
+        ChangeNotifierProvider(create: (_) => ChatController()),
+      ],
       child: Consumer<ThemeController>(
         builder: (context, themeController, child) {
           final currentTheme = themeController.themeMode == ThemeMode.dark

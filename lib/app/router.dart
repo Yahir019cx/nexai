@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:nexai/app/app_shell.dart';
-import 'package:nexai/app/bootstrap_home.dart';
 import 'package:nexai/app/route_transitions.dart';
+import 'package:nexai/features/chat/chat_page.dart';
 
 abstract final class AppRoutes {
   static const String home = '/';
@@ -17,7 +17,7 @@ final GoRouter appRouter = GoRouter(
           path: AppRoutes.home,
           pageBuilder: (context, state) => buildFadeTransitionPage(
             key: state.pageKey,
-            child: const BootstrapHome(),
+            child: const ChatPage(),
           ),
         ),
       ],

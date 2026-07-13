@@ -22,7 +22,7 @@ class ChatWelcome extends StatelessWidget {
     final colors = Theme.of(context).extension<NexColors>()!;
 
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.space32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -48,9 +48,12 @@ class ChatWelcome extends StatelessWidget {
               alignment: WrapAlignment.center,
               children: [
                 for (final suggestion in _suggestions)
-                  NexChip(
-                    label: suggestion,
-                    onTap: () => onSuggestionSelected(suggestion),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 260),
+                    child: NexChip(
+                      label: suggestion,
+                      onTap: () => onSuggestionSelected(suggestion),
+                    ),
                   ),
               ],
             ),

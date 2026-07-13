@@ -41,6 +41,7 @@ class _AppShellState extends State<AppShell> {
     return Scaffold(
       backgroundColor: colors.background,
       body: Stack(
+        fit: StackFit.expand,
         children: [
           const Positioned.fill(child: LivingBackground()),
           Row(
@@ -59,6 +60,7 @@ class _AppShellState extends State<AppShell> {
               ),
               Expanded(
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
                     widget.child,
                     if (showToggleButton)

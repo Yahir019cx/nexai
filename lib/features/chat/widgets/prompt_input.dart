@@ -92,6 +92,7 @@ class _PromptInputState extends State<PromptInput> {
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
+                  isCollapsed: true,
                   hintText: 'Escribe un mensaje…',
                   hintStyle: AppTextStyles.body.copyWith(
                     color: colors.textDisabled,
