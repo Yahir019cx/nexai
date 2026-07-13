@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
-import 'package:nexai/app/router.dart';
 import 'package:nexai/core/constants/durations.dart';
 import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
-import 'package:nexai/core/theme/text_styles.dart';
+import 'package:nexai/features/chat/chat_controller.dart';
+import 'package:nexai/features/chat/widgets/sidebar_conversation_history.dart';
 import 'package:nexai/widgets/nex_button.dart';
 import 'package:nexai/widgets/nex_divider.dart';
 import 'package:nexai/widgets/sidebar_logo_mark.dart';
 import 'package:nexai/widgets/sidebar_nav_item.dart';
 import 'package:nexai/widgets/sidebar_profile_tile.dart';
+import 'package:provider/provider.dart';
 
 class NexSidebar extends StatelessWidget {
   const NexSidebar({super.key});
@@ -47,7 +47,8 @@ class NexSidebar extends StatelessWidget {
             NexButton(
               label: 'Nuevo chat',
               icon: Icons.add,
-              onPressed: () => context.go(AppRoutes.home),
+              onPressed: () =>
+                  context.read<ChatController>().startNewConversation(),
             ),
             const SizedBox(height: AppSpacing.space20),
             for (var index = 0; index < navItems.length; index++)
@@ -64,17 +65,7 @@ class NexSidebar extends StatelessWidget {
             const SizedBox(height: AppSpacing.space12),
             const NexDivider(),
             const SizedBox(height: AppSpacing.space12),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Aún no tienes conversaciones',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(
-                    color: colors.textDisabled,
-                  ),
-                ),
-              ),
-            ),
+            const Expanded(child: SidebarConversationHistory()),
             const SizedBox(height: AppSpacing.space12),
             const NexDivider(),
             const SizedBox(height: AppSpacing.space16),
