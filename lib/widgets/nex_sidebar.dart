@@ -7,6 +7,7 @@ import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
 import 'package:nexai/core/theme/text_styles.dart';
 import 'package:nexai/widgets/nex_button.dart';
+import 'package:nexai/widgets/nex_divider.dart';
 import 'package:nexai/widgets/sidebar_logo_mark.dart';
 import 'package:nexai/widgets/sidebar_nav_item.dart';
 import 'package:nexai/widgets/sidebar_profile_tile.dart';
@@ -61,7 +62,7 @@ class NexSidebar extends StatelessWidget {
                     .slideX(begin: -0.05, end: 0),
               ),
             const SizedBox(height: AppSpacing.space12),
-            Container(height: 1, color: colors.border),
+            const NexDivider(),
             const SizedBox(height: AppSpacing.space12),
             Expanded(
               child: Center(
@@ -75,7 +76,7 @@ class NexSidebar extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.space12),
-            Container(height: 1, color: colors.border),
+            const NexDivider(),
             const SizedBox(height: AppSpacing.space16),
             const SidebarProfileTile(),
           ],
