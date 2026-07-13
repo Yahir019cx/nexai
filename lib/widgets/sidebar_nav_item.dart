@@ -27,6 +27,7 @@ class SidebarNavItem extends StatefulWidget {
 
 class _SidebarNavItemState extends State<SidebarNavItem> {
   bool _isHovered = false;
+  bool _isFocused = false;
 
   @override
   Widget build(BuildContext context) {
@@ -42,16 +43,21 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
 
     return Opacity(
       opacity: widget.isEnabled ? 1 : 0.6,
-      child: MouseRegion(
-        cursor: widget.isEnabled
+      child: FocusableActionDetector(
+        enabled: widget.isEnabled,
+        mouseCursor: widget.isEnabled
             ? SystemMouseCursors.click
             : SystemMouseCursors.basic,
-        onEnter: widget.isEnabled
-            ? (_) => setState(() => _isHovered = true)
-            : null,
-        onExit: widget.isEnabled
-            ? (_) => setState(() => _isHovered = false)
-            : null,
+        onShowHoverHighlight: (value) => setState(() => _isHovered = value),
+        onShowFocusHighlight: (value) => setState(() => _isFocused = value),
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap?.call();
+              return null;
+            },
+          ),
+        },
         child: GestureDetector(
           onTap: widget.isEnabled ? widget.onTap : null,
           child: AnimatedContainer(
@@ -63,6 +69,10 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
             decoration: BoxDecoration(
               color: background,
               borderRadius: BorderRadius.circular(AppRadius.radius8),
+              border: Border.all(
+                color: _isFocused ? AppColors.primary : Colors.transparent,
+                width: 1.5,
+              ),
             ),
             child: Row(
               children: [

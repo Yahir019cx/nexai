@@ -17,13 +17,22 @@ class SidebarNewChatButton extends StatefulWidget {
 class _SidebarNewChatButtonState extends State<SidebarNewChatButton> {
   bool _isHovered = false;
   bool _isPressed = false;
+  bool _isFocused = false;
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+    return FocusableActionDetector(
+      mouseCursor: SystemMouseCursors.click,
+      onShowHoverHighlight: (value) => setState(() => _isHovered = value),
+      onShowFocusHighlight: (value) => setState(() => _isFocused = value),
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) {
+            widget.onTap();
+            return null;
+          },
+        ),
+      },
       child: GestureDetector(
         onTapDown: (_) => setState(() => _isPressed = true),
         onTapUp: (_) => setState(() => _isPressed = false),
@@ -41,6 +50,10 @@ class _SidebarNewChatButtonState extends State<SidebarNewChatButton> {
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: _isHovered ? 1 : 0.9),
               borderRadius: BorderRadius.circular(AppRadius.radius12),
+              border: Border.all(
+                color: _isFocused ? Colors.white : Colors.transparent,
+                width: 1.5,
+              ),
             ),
             child: Row(
               children: [

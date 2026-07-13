@@ -149,15 +149,24 @@ class _MenuToggleButton extends StatefulWidget {
 
 class _MenuToggleButtonState extends State<_MenuToggleButton> {
   bool _isHovered = false;
+  bool _isFocused = false;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<NexColors>()!;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+    return FocusableActionDetector(
+      mouseCursor: SystemMouseCursors.click,
+      onShowHoverHighlight: (value) => setState(() => _isHovered = value),
+      onShowFocusHighlight: (value) => setState(() => _isFocused = value),
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) {
+            widget.onTap();
+            return null;
+          },
+        ),
+      },
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
@@ -166,7 +175,10 @@ class _MenuToggleButtonState extends State<_MenuToggleButton> {
           decoration: BoxDecoration(
             color: _isHovered ? colors.surfaceHigh : colors.surface,
             borderRadius: BorderRadius.circular(AppRadius.radius8),
-            border: Border.all(color: colors.border),
+            border: Border.all(
+              color: _isFocused ? AppColors.primary : colors.border,
+              width: _isFocused ? 1.5 : 1,
+            ),
           ),
           child: Icon(Icons.menu, size: 18, color: colors.textPrimary),
         ),
