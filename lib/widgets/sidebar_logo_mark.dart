@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nexai/core/constants/border_radius.dart';
 import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
 import 'package:nexai/core/theme/text_styles.dart';
@@ -13,21 +12,11 @@ class SidebarLogoMark extends StatelessWidget {
 
     return Row(
       children: [
-        Container(
+        Image.asset(
+          'assets/logo/nexai_logo.png',
           width: AppSpacing.space24,
           height: AppSpacing.space24,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(AppRadius.radius8),
-          ),
-          child: Text(
-            'N',
-            style: AppTextStyles.label.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          fit: BoxFit.contain,
         ),
         const SizedBox(width: AppSpacing.space12),
         Text(
