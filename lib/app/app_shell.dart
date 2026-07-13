@@ -9,8 +9,9 @@ import 'package:nexai/widgets/living_background.dart';
 import 'package:nexai/widgets/nex_sidebar.dart';
 
 class AppShell extends StatefulWidget {
-  const AppShell({super.key, required this.child});
+  const AppShell({super.key, required this.currentLocation, required this.child});
 
+  final String currentLocation;
   final Widget child;
 
   @override
@@ -52,9 +53,9 @@ class _AppShellState extends State<AppShell> {
                   curve: AppCurves.standard,
                   alignment: Alignment.centerLeft,
                   widthFactor: showInlineSidebar ? 1 : 0,
-                  child: const SizedBox(
+                  child: SizedBox(
                     width: _sidebarWidth,
-                    child: NexSidebar(),
+                    child: NexSidebar(currentLocation: widget.currentLocation),
                   ),
                 ),
               ),
@@ -82,6 +83,7 @@ class _AppShellState extends State<AppShell> {
                       _SidebarOverlay(
                         isOpen: _isMobileSidebarOpen,
                         width: _sidebarWidth,
+                        currentLocation: widget.currentLocation,
                         onDismiss: () =>
                             setState(() => _isMobileSidebarOpen = false),
                       ),
@@ -102,11 +104,13 @@ class _SidebarOverlay extends StatelessWidget {
   const _SidebarOverlay({
     required this.isOpen,
     required this.width,
+    required this.currentLocation,
     required this.onDismiss,
   });
 
   final bool isOpen;
   final double width;
+  final String currentLocation;
   final VoidCallback onDismiss;
 
   @override
@@ -131,7 +135,7 @@ class _SidebarOverlay extends StatelessWidget {
               top: 0,
               bottom: 0,
               width: width,
-              child: const NexSidebar(),
+              child: NexSidebar(currentLocation: currentLocation),
             ),
           ],
         ),

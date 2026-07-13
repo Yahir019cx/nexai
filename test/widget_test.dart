@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexai/app/app.dart';
 import 'package:nexai/features/chat/widgets/chat_welcome.dart';
@@ -13,6 +13,18 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.byType(ChatWelcome), findsOneWidget);
+  });
+
+  testWidgets('Ctrl+, navega a Configuración', (WidgetTester tester) async {
+    await tester.pumpWidget(const NexaiApp());
+    await tester.pump(const Duration(seconds: 1));
+
+    await simulateKeyDownEvent(LogicalKeyboardKey.control);
+    await tester.sendKeyEvent(LogicalKeyboardKey.comma);
+    await simulateKeyUpEvent(LogicalKeyboardKey.control);
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('Configuración'), findsWidgets);
   });
 
   for (final width in [1440.0, 900.0, 400.0]) {

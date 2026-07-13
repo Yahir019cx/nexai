@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nexai/app/router.dart';
 import 'package:nexai/core/constants/durations.dart';
 import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
@@ -13,7 +15,9 @@ import 'package:nexai/widgets/sidebar_profile_tile.dart';
 import 'package:provider/provider.dart';
 
 class NexSidebar extends StatelessWidget {
-  const NexSidebar({super.key});
+  const NexSidebar({super.key, required this.currentLocation});
+
+  final String currentLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +29,11 @@ class NexSidebar extends StatelessWidget {
         label: 'Buscar',
         isEnabled: false,
       ),
-      const SidebarNavItem(
+      SidebarNavItem(
         icon: Icons.settings_outlined,
         label: 'Configuración',
-        isEnabled: false,
+        isSelected: currentLocation == AppRoutes.settings,
+        onTap: () => context.go(AppRoutes.settings),
       ),
     ];
 
