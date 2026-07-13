@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/features/chat/chat_controller.dart';
+import 'package:nexai/features/chat/widgets/chat_header.dart';
 import 'package:nexai/features/chat/widgets/chat_welcome.dart';
 import 'package:nexai/features/chat/widgets/message_list.dart';
 import 'package:nexai/features/chat/widgets/prompt_input.dart';
@@ -44,6 +45,7 @@ class _ChatPageState extends State<ChatPage> {
 
     return Column(
       children: [
+        const ChatHeader(),
         Expanded(
           child: Center(
             child: ConstrainedBox(

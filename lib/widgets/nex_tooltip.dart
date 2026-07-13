@@ -2,14 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:nexai/core/constants/border_radius.dart';
-import 'package:nexai/core/constants/durations.dart';
 import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
 import 'package:nexai/core/theme/text_styles.dart';
+import 'package:nexai/widgets/nex_menu_entrance.dart';
 
-/// Ayuda contextual con fade y pequeño retraso (doc 022/024). No
-/// utiliza Overlay: se dibuja por encima del contenido sin ocupar
-/// espacio de layout, mediante OverflowBox.
+/// Ayuda contextual con fade y pequeño retraso (doc 022/024).
+/// Posicionada con CompositedTransformFollower (mismo patrón que
+/// NexDropdown/NexContextMenu) para no depender de constraints
+/// ambientales, a diferencia de un enfoque basado en OverflowBox.
 class NexTooltip extends StatefulWidget {
   const NexTooltip({super.key, required this.message, required this.child});
 
@@ -21,59 +22,71 @@ class NexTooltip extends StatefulWidget {
 }
 
 class _NexTooltipState extends State<NexTooltip> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
   Timer? _showTimer;
-  bool _isVisible = false;
 
   void _scheduleShow() {
     _showTimer?.cancel();
-    _showTimer = Timer(const Duration(milliseconds: 400), () {
-      if (mounted) setState(() => _isVisible = true);
-    });
+    _showTimer = Timer(const Duration(milliseconds: 400), _show);
+  }
+
+  void _show() {
+    if (!mounted || _overlayEntry != null) return;
+    final overlay = Overlay.of(context);
+    _overlayEntry = OverlayEntry(
+      builder: (context) =>
+          _TooltipOverlay(layerLink: _layerLink, message: widget.message),
+    );
+    overlay.insert(_overlayEntry!);
   }
 
   void _hide() {
     _showTimer?.cancel();
-    if (_isVisible) setState(() => _isVisible = false);
+    _overlayEntry?.remove();
+    _overlayEntry = null;
   }
 
   @override
   void dispose() {
     _showTimer?.cancel();
+    _overlayEntry?.remove();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: MouseRegion(
+        onEnter: (_) => _scheduleShow(),
+        onExit: (_) => _hide(),
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+class _TooltipOverlay extends StatelessWidget {
+  const _TooltipOverlay({required this.layerLink, required this.message});
+
+  final LayerLink layerLink;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<NexColors>()!;
 
-    return MouseRegion(
-      onEnter: (_) => _scheduleShow(),
-      onExit: (_) => _hide(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: 0,
-            child: OverflowBox(
-              maxHeight: 120,
-              alignment: Alignment.bottomCenter,
-              child: IgnorePointer(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.space8),
-                  child: AnimatedOpacity(
-                    opacity: _isVisible ? 1 : 0,
-                    duration: AppDurations.fast,
-                    child: _TooltipBubble(
-                      message: widget.message,
-                      colors: colors,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          widget.child,
-        ],
+    return IgnorePointer(
+      child: CompositedTransformFollower(
+        link: layerLink,
+        showWhenUnlinked: false,
+        targetAnchor: Alignment.topCenter,
+        followerAnchor: Alignment.bottomCenter,
+        offset: const Offset(0, -AppSpacing.space8),
+        child: NexMenuEntrance(
+          child: _TooltipBubble(message: message, colors: colors),
+        ),
       ),
     );
   }

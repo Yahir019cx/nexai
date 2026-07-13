@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:nexai/features/chat/available_models.dart';
 import 'package:nexai/features/chat/chat_service.dart';
+import 'package:nexai/models/attachment_model.dart';
 import 'package:nexai/models/conversation_model.dart';
 import 'package:nexai/models/message_model.dart';
 
@@ -10,11 +12,13 @@ class ChatController extends ChangeNotifier {
   final ChatService _chatService;
   final List<ConversationModel> _conversations = [];
   String? _activeConversationId;
+  String _selectedModelId = availableAiModels.first.id;
   bool _isSending = false;
   bool _cancelRequested = false;
 
   List<ConversationModel> get conversations => List.unmodifiable(_conversations);
   String? get activeConversationId => _activeConversationId;
+  String get selectedModelId => _selectedModelId;
   bool get isSending => _isSending;
 
   ConversationModel? get activeConversation {
@@ -43,9 +47,19 @@ class ChatController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> sendMessage(String content) async {
+  /// Cambia el modelo activo (doc 013 Fase 5: "Cambio dinámico").
+  void selectModel(String modelId) {
+    if (_selectedModelId == modelId) return;
+    _selectedModelId = modelId;
+    notifyListeners();
+  }
+
+  Future<void> sendMessage(
+    String content, {
+    List<AttachmentModel> attachments = const [],
+  }) async {
     final trimmed = content.trim();
-    if (trimmed.isEmpty || _isSending) return;
+    if ((trimmed.isEmpty && attachments.isEmpty) || _isSending) return;
 
     if (activeConversation == null) startNewConversation();
     final conversationId = _activeConversationId!;
@@ -56,9 +70,15 @@ class ChatController extends ChangeNotifier {
       role: MessageRole.user,
       content: trimmed,
       createdAt: DateTime.now(),
+      attachments: attachments,
     );
     _appendMessage(conversationId, userMessage);
-    if (isFirstMessage) _renameConversation(conversationId, _titleFrom(trimmed));
+    if (isFirstMessage) {
+      _renameConversation(
+        conversationId,
+        _titleFrom(trimmed.isEmpty ? attachments.first.fileName : trimmed),
+      );
+    }
 
     await _streamAssistantResponse(conversationId, trimmed);
   }
@@ -110,6 +130,7 @@ class ChatController extends ChangeNotifier {
   ) async {
     _isSending = true;
     _cancelRequested = false;
+    final modelId = _selectedModelId;
     notifyListeners();
 
     var assistantMessage = MessageModel(
@@ -118,6 +139,7 @@ class ChatController extends ChangeNotifier {
       content: '',
       createdAt: DateTime.now(),
       status: MessageStatus.sending,
+      modelId: modelId,
     );
     _appendMessage(conversationId, assistantMessage);
 

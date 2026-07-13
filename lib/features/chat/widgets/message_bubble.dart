@@ -5,10 +5,12 @@ import 'package:nexai/core/constants/durations.dart';
 import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
 import 'package:nexai/core/theme/text_styles.dart';
+import 'package:nexai/features/chat/available_models.dart';
 import 'package:nexai/features/chat/widgets/message_actions.dart';
 import 'package:nexai/features/chat/widgets/message_markdown.dart';
 import 'package:nexai/features/chat/widgets/thinking_indicator.dart';
 import 'package:nexai/models/message_model.dart';
+import 'package:nexai/widgets/nex_badge.dart';
 
 class MessageBubble extends StatefulWidget {
   const MessageBubble({
@@ -43,6 +45,8 @@ class _MessageBubbleState extends State<MessageBubble> {
       );
     }
 
+    final model = message.modelId == null ? null : aiModelById(message.modelId!);
+
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: MouseRegion(
@@ -55,6 +59,11 @@ class _MessageBubbleState extends State<MessageBubble> {
                 ? CrossAxisAlignment.end
                 : CrossAxisAlignment.start,
             children: [
+              if (model != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.space4),
+                  child: NexBadge(label: model.name),
+                ),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.space16,

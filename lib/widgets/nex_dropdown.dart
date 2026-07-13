@@ -116,32 +116,41 @@ class _NexDropdownState<T> extends State<NexDropdown<T>> {
                 width: _isFocused ? 1.5 : 1,
               ),
             ),
-            child: Row(
-              children: [
-                if (selected?.icon != null) ...[
-                  Icon(selected!.icon, size: 16, color: colors.textSecondary),
-                  const SizedBox(width: AppSpacing.space8),
-                ],
-                Expanded(
-                  child: Text(
-                    selected?.label ?? widget.hint ?? '',
-                    style: AppTextStyles.body.copyWith(
-                      color: selected != null
-                          ? colors.textPrimary
-                          : colors.textDisabled,
+            // IntrinsicWidth: como NexDropdown suele usarse como hijo
+            // simple (no Expanded) de un Row externo, ese Row lo mide
+            // primero con ancho no acotado (asi funciona Flex en
+            // Flutter). Sin esto, el Expanded interno truena.
+            child: IntrinsicWidth(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (selected?.icon != null) ...[
+                    Icon(selected!.icon, size: 16, color: colors.textSecondary),
+                    const SizedBox(width: AppSpacing.space8),
+                  ],
+                  Flexible(
+                    child: Text(
+                      selected?.label ?? widget.hint ?? '',
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.body.copyWith(
+                        color: selected != null
+                            ? colors.textPrimary
+                            : colors.textDisabled,
+                      ),
                     ),
                   ),
-                ),
-                AnimatedRotation(
-                  turns: _isOpen ? 0.5 : 0,
-                  duration: AppDurations.fast,
-                  child: Icon(
-                    Icons.expand_more,
-                    size: 18,
-                    color: colors.textSecondary,
+                  const SizedBox(width: AppSpacing.space8),
+                  AnimatedRotation(
+                    turns: _isOpen ? 0.5 : 0,
+                    duration: AppDurations.fast,
+                    child: Icon(
+                      Icons.expand_more,
+                      size: 18,
+                      color: colors.textSecondary,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
