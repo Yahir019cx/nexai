@@ -122,7 +122,9 @@ class _NexInputState extends State<NexInput> {
                         alignment: Alignment.topLeft,
                         child: widget.label != null && showFloatingLabel
                             ? Padding(
-                                padding: const EdgeInsets.only(bottom: 2),
+                                padding: const EdgeInsets.only(
+                                  bottom: AppSpacing.space4,
+                                ),
                                 child: Text(
                                   widget.label!,
                                   style: AppTextStyles.caption.copyWith(

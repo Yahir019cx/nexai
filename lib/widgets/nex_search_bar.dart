@@ -5,6 +5,7 @@ import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
 import 'package:nexai/core/theme/text_styles.dart';
 import 'package:nexai/widgets/nex_field_style.dart';
+import 'package:nexai/widgets/nex_search_bar_accessory.dart';
 
 class NexSearchBar extends StatefulWidget {
   const NexSearchBar({
@@ -121,13 +122,13 @@ class _NexSearchBarState extends State<NexSearchBar> {
             AnimatedSwitcher(
               duration: AppDurations.fast,
               child: _hasText
-                  ? _ClearButton(
+                  ? NexSearchBarClearButton(
                       key: const ValueKey('clear'),
                       onTap: _clear,
                       colors: colors,
                     )
                   : (showShortcut
-                        ? _ShortcutBadge(
+                        ? NexSearchBarShortcutBadge(
                             key: const ValueKey('shortcut'),
                             label: widget.shortcutLabel!,
                             colors: colors,
@@ -136,68 +137,6 @@ class _NexSearchBarState extends State<NexSearchBar> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ClearButton extends StatefulWidget {
-  const _ClearButton({super.key, required this.onTap, required this.colors});
-
-  final VoidCallback onTap;
-  final NexColors colors;
-
-  @override
-  State<_ClearButton> createState() => _ClearButtonState();
-}
-
-class _ClearButtonState extends State<_ClearButton> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: Icon(
-          Icons.close,
-          size: 16,
-          color: _isHovered
-              ? widget.colors.textPrimary
-              : widget.colors.textSecondary,
-        ),
-      ),
-    );
-  }
-}
-
-class _ShortcutBadge extends StatelessWidget {
-  const _ShortcutBadge({
-    super.key,
-    required this.label,
-    required this.colors,
-  });
-
-  final String label;
-  final NexColors colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space8,
-        vertical: AppSpacing.space4,
-      ),
-      decoration: BoxDecoration(
-        color: colors.surfaceHigh,
-        borderRadius: BorderRadius.circular(AppRadius.radius8),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.caption.copyWith(color: colors.textDisabled),
       ),
     );
   }
