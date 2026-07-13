@@ -6,9 +6,9 @@ import 'package:nexai/core/constants/durations.dart';
 import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
 import 'package:nexai/core/theme/text_styles.dart';
+import 'package:nexai/widgets/nex_button.dart';
 import 'package:nexai/widgets/sidebar_logo_mark.dart';
 import 'package:nexai/widgets/sidebar_nav_item.dart';
-import 'package:nexai/widgets/sidebar_new_chat_button.dart';
 import 'package:nexai/widgets/sidebar_profile_tile.dart';
 
 class NexSidebar extends StatelessWidget {
@@ -43,7 +43,11 @@ class NexSidebar extends StatelessWidget {
           children: [
             const SidebarLogoMark(),
             const SizedBox(height: AppSpacing.space24),
-            SidebarNewChatButton(onTap: () => context.go(AppRoutes.home)),
+            NexButton(
+              label: 'Nuevo chat',
+              icon: Icons.add,
+              onPressed: () => context.go(AppRoutes.home),
+            ),
             const SizedBox(height: AppSpacing.space20),
             for (var index = 0; index < navItems.length; index++)
               Padding(
