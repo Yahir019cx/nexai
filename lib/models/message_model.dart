@@ -1,6 +1,6 @@
 enum MessageRole { user, assistant }
 
-enum MessageStatus { sending, streaming, complete, error }
+enum MessageStatus { sending, streaming, complete, error, cancelled }
 
 class MessageModel {
   const MessageModel({

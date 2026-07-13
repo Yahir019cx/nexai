@@ -11,6 +11,7 @@ class ChatController extends ChangeNotifier {
   final List<ConversationModel> _conversations = [];
   String? _activeConversationId;
   bool _isSending = false;
+  bool _cancelRequested = false;
 
   List<ConversationModel> get conversations => List.unmodifiable(_conversations);
   String? get activeConversationId => _activeConversationId;
@@ -57,11 +58,58 @@ class ChatController extends ChangeNotifier {
       createdAt: DateTime.now(),
     );
     _appendMessage(conversationId, userMessage);
-    if (isFirstMessage) {
-      _renameConversation(conversationId, _titleFrom(trimmed));
-    }
+    if (isFirstMessage) _renameConversation(conversationId, _titleFrom(trimmed));
 
+    await _streamAssistantResponse(conversationId, trimmed);
+  }
+
+  /// Regenera una respuesta existente (doc 006: acción "Regenerar"),
+  /// repitiendo el prompt del mensaje de usuario que la originó.
+  Future<void> regenerateMessage(String messageId) async {
+    final conversation = activeConversation;
+    if (conversation == null || _isSending) return;
+
+    final index = conversation.messages.indexWhere((m) => m.id == messageId);
+    if (index <= 0) return;
+    final precedingUserMessage = conversation.messages[index - 1];
+    if (precedingUserMessage.role != MessageRole.user) return;
+
+    _updateConversation(
+      conversation.copyWith(messages: conversation.messages.sublist(0, index)),
+    );
+    await _streamAssistantResponse(conversation.id, precedingUserMessage.content);
+  }
+
+  /// Prepara la edición de un mensaje ya enviado (doc 006: "la
+  /// conversación deberá continuar desde ese punto"): elimina ese
+  /// mensaje y todo lo posterior, devolviendo su contenido original
+  /// para que la pantalla lo cargue en el prompt.
+  String prepareEdit(String messageId) {
+    final conversation = activeConversation;
+    if (conversation == null) return '';
+
+    final index = conversation.messages.indexWhere((m) => m.id == messageId);
+    if (index == -1) return '';
+
+    final content = conversation.messages[index].content;
+    _updateConversation(
+      conversation.copyWith(messages: conversation.messages.sublist(0, index)),
+    );
+    return content;
+  }
+
+  /// Cancela la respuesta en curso (doc 006: estado "Cancelado").
+  void cancelSending() {
+    if (!_isSending) return;
+    _cancelRequested = true;
+  }
+
+  Future<void> _streamAssistantResponse(
+    String conversationId,
+    String prompt,
+  ) async {
     _isSending = true;
+    _cancelRequested = false;
     notifyListeners();
 
     var assistantMessage = MessageModel(
@@ -73,25 +121,49 @@ class ChatController extends ChangeNotifier {
     );
     _appendMessage(conversationId, assistantMessage);
 
-    await Future.delayed(const Duration(milliseconds: 700));
+    try {
+      await Future.delayed(const Duration(milliseconds: 700));
+      if (_cancelRequested) {
+        _replaceMessage(
+          conversationId,
+          assistantMessage.copyWith(status: MessageStatus.cancelled),
+        );
+        return;
+      }
 
-    assistantMessage = assistantMessage.copyWith(
-      status: MessageStatus.streaming,
-    );
-    _replaceMessage(conversationId, assistantMessage);
-
-    await for (final partial in _chatService.streamAssistantReply(trimmed)) {
-      assistantMessage = assistantMessage.copyWith(content: partial);
+      assistantMessage = assistantMessage.copyWith(
+        status: MessageStatus.streaming,
+      );
       _replaceMessage(conversationId, assistantMessage);
+
+      await for (final partial in _chatService.streamAssistantReply(prompt)) {
+        if (_cancelRequested) {
+          _replaceMessage(
+            conversationId,
+            assistantMessage.copyWith(status: MessageStatus.cancelled),
+          );
+          return;
+        }
+        assistantMessage = assistantMessage.copyWith(content: partial);
+        _replaceMessage(conversationId, assistantMessage);
+      }
+
+      assistantMessage = assistantMessage.copyWith(
+        status: MessageStatus.complete,
+      );
+      _replaceMessage(conversationId, assistantMessage);
+    } catch (_) {
+      _replaceMessage(
+        conversationId,
+        assistantMessage.copyWith(
+          status: MessageStatus.error,
+          content: 'No fue posible completar la solicitud.',
+        ),
+      );
+    } finally {
+      _isSending = false;
+      notifyListeners();
     }
-
-    assistantMessage = assistantMessage.copyWith(
-      status: MessageStatus.complete,
-    );
-    _replaceMessage(conversationId, assistantMessage);
-
-    _isSending = false;
-    notifyListeners();
   }
 
   void _appendMessage(String conversationId, MessageModel message) {
@@ -130,6 +202,8 @@ class ChatController extends ChangeNotifier {
     return content.length > 40 ? '${content.substring(0, 40)}…' : content;
   }
 
+  int _idCounter = 0;
+
   String _generateId() =>
-      '${DateTime.now().microsecondsSinceEpoch}-${_conversations.length}';
+      '${DateTime.now().microsecondsSinceEpoch}-${_idCounter++}';
 }

@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:nexai/core/constants/border_radius.dart';
 import 'package:nexai/core/constants/durations.dart';
 import 'package:nexai/core/constants/spacing.dart';
 import 'package:nexai/core/theme/colors.dart';
 import 'package:nexai/core/theme/text_styles.dart';
+import 'package:nexai/features/chat/widgets/message_actions.dart';
 import 'package:nexai/features/chat/widgets/message_markdown.dart';
 import 'package:nexai/features/chat/widgets/thinking_indicator.dart';
 import 'package:nexai/models/message_model.dart';
-import 'package:nexai/widgets/nex_toast.dart';
-import 'package:nexai/widgets/nex_tooltip.dart';
 
 class MessageBubble extends StatefulWidget {
-  const MessageBubble({super.key, required this.message});
+  const MessageBubble({
+    super.key,
+    required this.message,
+    this.onEdit,
+    this.onRegenerate,
+  });
 
   final MessageModel message;
+  final VoidCallback? onEdit;
+  final VoidCallback? onRegenerate;
 
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
@@ -27,9 +32,11 @@ class _MessageBubbleState extends State<MessageBubble> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<NexColors>()!;
-    final isUser = widget.message.role == MessageRole.user;
+    final message = widget.message;
+    final isUser = message.role == MessageRole.user;
+    final isError = message.status == MessageStatus.error;
 
-    if (widget.message.status == MessageStatus.sending) {
+    if (message.status == MessageStatus.sending) {
       return const Align(
         alignment: Alignment.centerLeft,
         child: ThinkingIndicator(),
@@ -54,26 +61,47 @@ class _MessageBubbleState extends State<MessageBubble> {
                   vertical: AppSpacing.space12,
                 ),
                 decoration: BoxDecoration(
-                  color: isUser
-                      ? AppColors.primary.withValues(alpha: 0.15)
-                      : colors.surfaceVariant,
+                  color: isError
+                      ? colors.error.withValues(alpha: 0.12)
+                      : (isUser
+                            ? AppColors.primary.withValues(alpha: 0.15)
+                            : colors.surfaceVariant),
                   borderRadius: BorderRadius.circular(AppRadius.radius16),
+                  border: isError
+                      ? Border.all(color: colors.error.withValues(alpha: 0.4))
+                      : null,
                 ),
-                child: isUser
-                    ? Text(
-                        widget.message.content,
-                        style: AppTextStyles.body.copyWith(
-                          color: colors.textPrimary,
-                        ),
-                      )
-                    : MessageMarkdown(data: widget.message.content),
+                child: isError
+                    ? _ErrorContent(message: message.content, colors: colors)
+                    : (isUser
+                          ? Text(
+                              message.content,
+                              style: AppTextStyles.body.copyWith(
+                                color: colors.textPrimary,
+                              ),
+                            )
+                          : MessageMarkdown(data: message.content)),
               ),
+              if (message.status == MessageStatus.cancelled)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.space4),
+                  child: Text(
+                    'Cancelado',
+                    style: AppTextStyles.caption.copyWith(
+                      color: colors.textDisabled,
+                    ),
+                  ),
+                ),
               AnimatedOpacity(
                 opacity: _isHovered ? 1 : 0,
                 duration: AppDurations.fast,
                 child: Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.space4),
-                  child: _MessageActions(content: widget.message.content),
+                  child: MessageActions(
+                    content: message.content,
+                    onEdit: isUser ? widget.onEdit : null,
+                    onRegenerate: !isUser ? widget.onRegenerate : null,
+                  ),
                 ),
               ),
             ],
@@ -84,26 +112,26 @@ class _MessageBubbleState extends State<MessageBubble> {
   }
 }
 
-class _MessageActions extends StatelessWidget {
-  const _MessageActions({required this.content});
+class _ErrorContent extends StatelessWidget {
+  const _ErrorContent({required this.message, required this.colors});
 
-  final String content;
+  final String message;
+  final NexColors colors;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<NexColors>()!;
-
-    return NexTooltip(
-      message: 'Copiar',
-      child: GestureDetector(
-        onTap: () async {
-          await Clipboard.setData(ClipboardData(text: content));
-          if (context.mounted) {
-            NexToast.show(context, message: 'Copiado al portapapeles');
-          }
-        },
-        child: Icon(Icons.copy_outlined, size: 14, color: colors.textDisabled),
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.error_outline, size: 16, color: colors.error),
+        const SizedBox(width: AppSpacing.space8),
+        Flexible(
+          child: Text(
+            message,
+            style: AppTextStyles.body.copyWith(color: colors.error),
+          ),
+        ),
+      ],
     );
   }
 }

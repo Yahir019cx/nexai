@@ -9,9 +9,16 @@ import 'package:nexai/models/message_model.dart';
 /// desplaza automáticamente al llegar contenido nuevo, sin mover la
 /// pantalla de forma brusca (doc 006).
 class MessageList extends StatefulWidget {
-  const MessageList({super.key, required this.messages});
+  const MessageList({
+    super.key,
+    required this.messages,
+    this.onEdit,
+    this.onRegenerate,
+  });
 
   final List<MessageModel> messages;
+  final ValueChanged<MessageModel>? onEdit;
+  final ValueChanged<String>? onRegenerate;
 
   @override
   State<MessageList> createState() => _MessageListState();
@@ -71,8 +78,18 @@ class _MessageListState extends State<MessageList> {
       itemCount: widget.messages.length,
       separatorBuilder: (context, index) =>
           const SizedBox(height: AppSpacing.space16),
-      itemBuilder: (context, index) =>
-          MessageBubble(message: widget.messages[index]),
+      itemBuilder: (context, index) {
+        final message = widget.messages[index];
+        return MessageBubble(
+          message: message,
+          onEdit: widget.onEdit == null
+              ? null
+              : () => widget.onEdit!(message),
+          onRegenerate: widget.onRegenerate == null
+              ? null
+              : () => widget.onRegenerate!(message.id),
+        );
+      },
     );
   }
 }

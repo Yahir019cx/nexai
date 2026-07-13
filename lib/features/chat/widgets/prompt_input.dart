@@ -9,11 +9,20 @@ import 'package:nexai/widgets/nex_button.dart';
 /// El componente más importante del proyecto (doc 022): debe
 /// sentirse como una herramienta profesional, no un TextField.
 /// Ctrl+Enter envía, Enter/Shift+Enter insertan salto de línea
-/// (doc 023).
+/// (doc 023). Mientras se envía, el botón se convierte en "detener"
+/// (doc 006: estado "Cancelado").
 class PromptInput extends StatefulWidget {
-  const PromptInput({super.key, required this.onSend, this.isSending = false});
+  const PromptInput({
+    super.key,
+    required this.onSend,
+    this.onStop,
+    this.controller,
+    this.isSending = false,
+  });
 
   final ValueChanged<String> onSend;
+  final VoidCallback? onStop;
+  final TextEditingController? controller;
   final bool isSending;
 
   @override
@@ -21,13 +30,17 @@ class PromptInput extends StatefulWidget {
 }
 
 class _PromptInputState extends State<PromptInput> {
-  final TextEditingController _controller = TextEditingController();
+  late final TextEditingController _controller;
   final FocusNode _focusNode = FocusNode();
+  bool _ownsController = false;
   bool _hasText = false;
 
   @override
   void initState() {
     super.initState();
+    _controller = widget.controller ?? TextEditingController();
+    _ownsController = widget.controller == null;
+    _hasText = _controller.text.trim().isNotEmpty;
     _controller.addListener(_handleTextChange);
   }
 
@@ -39,7 +52,7 @@ class _PromptInputState extends State<PromptInput> {
   @override
   void dispose() {
     _controller.removeListener(_handleTextChange);
-    _controller.dispose();
+    if (_ownsController) _controller.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -103,9 +116,13 @@ class _PromptInputState extends State<PromptInput> {
           ),
           const SizedBox(width: AppSpacing.space8),
           NexButton(
-            icon: Icons.arrow_upward,
-            isLoading: widget.isSending,
-            onPressed: _hasText && !widget.isSending ? _handleSend : null,
+            icon: widget.isSending ? Icons.stop_rounded : Icons.arrow_upward,
+            variant: widget.isSending
+                ? NexButtonVariant.secondary
+                : NexButtonVariant.primary,
+            onPressed: widget.isSending
+                ? widget.onStop
+                : (_hasText ? _handleSend : null),
           ),
         ],
       ),
